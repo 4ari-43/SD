@@ -21,16 +21,15 @@ type State = {
   loadingMore?: boolean
 }
 
-export function useOpportunitySearch(input: Omit<SearchRequest, "cursor">, active: boolean, sequence: number) {
+export function useOpportunitySearch(input: Omit<SearchRequest, "cursor">, sequence: number) {
   const [retry, setRetry] = useState(0)
   const [state, setState] = useState<State>()
   const body = JSON.stringify(input)
-  const key = JSON.stringify([active, sequence, retry, body])
+  const key = JSON.stringify([sequence, retry, body])
   const inFlight = useRef<{ key: string; controller: AbortController; pending: boolean } | null>(null)
   const current = state?.key === key ? state : undefined
 
   useEffect(() => {
-    if (!active) return
     const controller = new AbortController()
     const context = { key, controller, pending: true }
     inFlight.current = context
@@ -45,7 +44,7 @@ export function useOpportunitySearch(input: Omit<SearchRequest, "cursor">, activ
       clearTimeout(timer)
       controller.abort()
     }
-  }, [active, body, key])
+  }, [body, key])
 
   async function loadMore() {
     const data = current?.data
@@ -66,7 +65,7 @@ export function useOpportunitySearch(input: Omit<SearchRequest, "cursor">, activ
     }
   }
 
-  return { ...current, loading: active && !current, loadMore, restart: () => setRetry(value => value + 1) }
+  return { ...current, loading: !current, loadMore, restart: () => setRetry(value => value + 1) }
 }
 
 export function useOpportunitySuggestions(query: string, active: boolean) {

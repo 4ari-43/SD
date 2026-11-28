@@ -184,10 +184,9 @@ function FilterSidebar({ filters, setFilters, clear, categories }: { filters: Fi
 export function OpportunityFinder({ initialType }: { initialType?: Opportunity["type"] } = {}) {
   const [query, setQuery] = useState("")
   const [filters, setFilters] = useState<Filters>(() => ({ ...initialFilters, ...(initialType ? { type: initialType } : {}) }))
-  const [submitted, setSubmitted] = useState(true)
   const [mobileFilters, setMobileFilters] = useState(false)
   const [searchSequence, setSearchSequence] = useState(0)
-  const hasSubmitted = useRef(false)
+  const resultsSection = useRef<HTMLElement>(null)
   const [categories, setCategories] = useState<string[]>([])
   const sort = filters.sort as SearchRequest["sort"]
   const results = useOpportunitySearch({
@@ -199,7 +198,7 @@ export function OpportunityFinder({ initialType }: { initialType?: Opportunity["
       category: filters.category === "All fields" ? undefined : filters.category,
       location: filters.location || undefined,
     },
-  }, submitted, searchSequence)
+  }, searchSequence)
   useEffect(() => {
     const controller = new AbortController()
     fetch("/api/opportunities/facets", { signal: controller.signal }).then(async response => {
@@ -211,37 +210,14 @@ export function OpportunityFinder({ initialType }: { initialType?: Opportunity["
     return () => controller.abort()
   }, [])
   useEffect(() => {
-    const sections = document.querySelectorAll<HTMLElement>("[data-reveal]")
-    if (!("IntersectionObserver" in window)) {
-      sections.forEach((section) => section.classList.add("is-visible"))
-      return
-    }
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("is-visible")
-          observer.unobserve(entry.target)
-        }
-      })
-    }, { threshold: 0.12, rootMargin: "0px 0px -36px 0px" })
-
-    sections.forEach((section) => observer.observe(section))
-    return () => observer.disconnect()
-  }, [submitted])
-  useEffect(() => {
-    if (submitted) {
-      document.getElementById("explore")?.scrollIntoView({ behavior: "smooth", block: "start" })
-      hasSubmitted.current = true
-    } else if (hasSubmitted.current) {
-      document.getElementById("home")?.scrollIntoView({ behavior: "smooth", block: "start" })
-      hasSubmitted.current = false
-    }
-  }, [submitted, query, searchSequence])
+    if (!searchSequence) return
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"
+    resultsSection.current?.scrollIntoView({ behavior, block: "start" })
+  }, [searchSequence])
   const clearFilters = () => setFilters({ ...initialFilters, ...(initialType ? { type: initialType } : {}) })
   const updateFilterFromChip = (key: keyof Filters, value: string) => setFilters({ ...filters, [key]: value })
-  const clear = () => { clearFilters(); setQuery(""); setSubmitted(true) }
-  const runSearch = (value: string) => { setQuery(value); setSubmitted(true); setSearchSequence((current) => current + 1) }
+  const clear = () => { clearFilters(); setQuery("") }
+  const runSearch = (value: string) => { setQuery(value); setSearchSequence((current) => current + 1) }
   return <main>
     <SiteHeader />
     <section id="home" className="hero">
@@ -251,7 +227,7 @@ export function OpportunityFinder({ initialType }: { initialType?: Opportunity["
         <div className="hero-search"><SearchBox onSearch={runSearch} filters={filters} setFilters={setFilters} onClearFilters={clearFilters} categories={categories} /><div className="popular-row" aria-label="Popular searches">{popularSearches.slice(0, 4).map((term) => <button key={term} onClick={() => runSearch(term)}>{term}</button>)}</div></div>
       </div>
     </section>
-    {submitted && <section id="explore" className="explore-section scroll-reveal" data-reveal>
+    <section id="explore" ref={resultsSection} className="explore-section">
       <div className="explore-head">
         <div>
           <h2>{initialType === "Job" ? "Jobs" : initialType === "Internship" ? "Internships" : initialType === "Scholarship" ? "Scholarships" : "Search results"}</h2>
@@ -293,6 +269,6 @@ export function OpportunityFinder({ initialType }: { initialType?: Opportunity["
           </>}
         </div>
       </div>
-    </section>}
+    </section>
   </main>
 }
