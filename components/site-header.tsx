@@ -1,13 +1,14 @@
 "use client"
 
-import { Command } from "lucide-react"
+import { Bell, BriefcaseBusiness, ChevronDown, UserRound } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const navigationItems = [
   { href: "/jobs", label: "Jobs" },
-  { href: "/internships", label: "Internships" },
-  { href: "/scholarships", label: "Scholarships" },
+  { href: "/companies", label: "Companies" },
+  { href: "/resources", label: "Resources", dropdown: true },
+  { href: "/about", label: "About" },
 ]
 
 export function SiteHeader() {
@@ -16,8 +17,8 @@ export function SiteHeader() {
   return (
     <header className="navbar">
       <Link href="/" className="brand">
-        <span className="brand-mark"><Command size={19} /></span>
-        <span>path<span className="brand-accent">finder</span></span>
+        <span className="brand-mark"><BriefcaseBusiness size={20} /></span>
+        <span>JobHunt</span>
       </Link>
       <nav className="nav-links" aria-label="Main navigation">
         {navigationItems.map((item) => (
@@ -28,9 +29,17 @@ export function SiteHeader() {
             aria-current={pathname === item.href ? "page" : undefined}
           >
             {item.label}
+            {"dropdown" in item && item.dropdown && <ChevronDown size={14} />}
           </Link>
         ))}
       </nav>
+      <div className="header-actions" aria-label="Account actions">
+        <button type="button" className="header-icon" aria-label="Notifications"><Bell size={20} /></button>
+        <button type="button" className="header-profile" aria-label="Open account menu">
+          <span className="profile-avatar"><UserRound size={18} /></span>
+          <ChevronDown size={15} />
+        </button>
+      </div>
     </header>
   )
 }

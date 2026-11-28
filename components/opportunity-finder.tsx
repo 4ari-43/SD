@@ -179,7 +179,7 @@ function FilterSidebar({ filters, setFilters, clear }: { filters: Filters; setFi
 export function OpportunityFinder({ initialType }: { initialType?: Opportunity["type"] } = {}) {
   const [query, setQuery] = useState("")
   const [filters, setFilters] = useState<Filters>(() => ({ ...initialFilters, ...(initialType ? { type: initialType } : {}) }))
-  const [submitted, setSubmitted] = useState(initialType !== undefined)
+  const [submitted, setSubmitted] = useState(true)
   const [mobileFilters, setMobileFilters] = useState(false)
   const [searchSequence, setSearchSequence] = useState(0)
   const hasSubmitted = useRef(false)
@@ -213,7 +213,8 @@ export function OpportunityFinder({ initialType }: { initialType?: Opportunity["
     }
   }, [submitted, query, searchSequence])
   const clearFilters = () => setFilters({ ...initialFilters, ...(initialType ? { type: initialType } : {}) })
-  const clear = () => { clearFilters(); setQuery(""); setSubmitted(false) }
+  const updateFilterFromChip = (key: keyof Filters, value: string) => setFilters({ ...filters, [key]: value })
+  const clear = () => { clearFilters(); setQuery(""); setSubmitted(true) }
   const runSearch = (value: string) => { setQuery(value); setSubmitted(true); setSearchSequence((current) => current + 1) }
   return <main>
     <SiteHeader />
@@ -224,6 +225,19 @@ export function OpportunityFinder({ initialType }: { initialType?: Opportunity["
       </div>
     </section>
     {submitted && <section id="explore" className="explore-section scroll-reveal" data-reveal><div className="explore-head"><div><h2>{initialType === "Job" ? "Jobs" : initialType === "Internship" ? "Internships" : initialType === "Scholarship" ? "Scholarships" : "Search results"}</h2><p>{query ? `Matches for “${query}”` : initialType ? "Browse available opportunities." : "All opportunities"}</p></div><div className="explore-head-right"><span className="live-indicator"><i /> Updated today</span><button className="mobile-filter-button" onClick={() => setMobileFilters(!mobileFilters)}><SlidersHorizontal size={16} /> Filters</button></div></div>
+      <div className="job-filter-chips" aria-label="Quick filters">
+        <button className="all-filter-chip" type="button" onClick={() => setFilters({ ...initialFilters })}><SlidersHorizontal size={15} /> All Filters</button>
+        <button type="button" onClick={() => updateFilterFromChip("type", "All")}>Job Type <ChevronDown size={14} /></button>
+        <button type="button">Experience Level <ChevronDown size={14} /></button>
+        <button type="button">Salary Range <ChevronDown size={14} /></button>
+        <button type="button" onClick={() => updateFilterFromChip("mode", filters.mode === "Remote" ? "Any" : "Remote")}>Remote <ChevronDown size={14} /></button>
+        <button type="button">More Filters <ChevronDown size={14} /></button>
+        <label className="sort-chip">Sort by:
+          <select value={filters.sort} onChange={(event) => setFilters({ ...filters, sort: event.target.value })}>
+            <option>Relevance</option><option>Newest</option><option>Deadline</option>
+          </select>
+        </label>
+      </div>
       <div className="results-layout"><div className={`filters-mobile ${mobileFilters ? "filters-mobile-open" : ""}`}><FilterSidebar filters={filters} setFilters={setFilters} clear={clear} /></div><div className="results-column"><div className="results-toolbar"><span><strong>{results.length}</strong> opportunities found</span><span className="results-sort-note">Sorted by {filters.sort.toLowerCase()}</span></div>{results.length ? <div className="results-grid">{results.map((item) => <OpportunityCard item={item} key={item.id} />)}</div> : <div className="empty-results"><span className="empty-icon"><Search size={22} /></span><h3>No opportunities found</h3><p>Try a different search or loosen up your filters to see more results.</p><button onClick={clear}>Clear search &amp; filters</button></div>}</div></div>
     </section>}
   </main>
