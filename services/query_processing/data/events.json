@@ -1,0 +1,153 @@
+
+[
+  {
+    "event_id": "EVT001",
+    "title": "National Robotics Workshop",
+    "description": "Hands-on workshop on robot building and automation.",
+    "category": "Robotics",
+    "event_type": "Workshop",
+    "location": "Dhaka",
+    "date": "2026-12-15",
+    "registration_link": "https://example.com/evt001"
+  },
+  {
+    "event_id": "EVT002",
+    "title": "AI and Machine Learning Seminar",
+    "description": "Introduction to artificial intelligence and machine learning.",
+    "category": "Artificial Intelligence",
+    "event_type": "Seminar",
+    "location": "Dhaka",
+    "date": "2026-12-03",
+    "registration_link": "https://example.com/evt002"
+  },
+  {
+    "event_id": "EVT003",
+    "title": "Inter University Programming Contest",
+    "description": "Competitive programming and algorithm solving competition.",
+    "category": "Programming",
+    "event_type": "Competition",
+    "location": "Rajshahi",
+    "date": "2026-12-10",
+    "registration_link": "https://example.com/evt003"
+  },
+  {
+    "event_id": "EVT004",
+    "title": "Physics Olympiad",
+    "description": "A physics competition covering mechanics and electricity.",
+    "category": "Physics",
+    "event_type": "Olympiad",
+    "location": "Chittagong",
+    "date": "2026-11-29",
+    "registration_link": "https://example.com/evt004"
+  },
+  {
+    "event_id": "EVT005",
+    "title": "Biotechnology Exhibition",
+    "description": "Exhibition showcasing biotechnology and genetics projects.",
+    "category": "Biology",
+    "event_type": "Exhibition",
+    "location": "Dhaka",
+    "date": "2026-12-20",
+    "registration_link": "https://example.com/evt005"
+  },
+  {
+    "event_id": "EVT006",
+    "title": "Robotics Competition 2026",
+    "description": "Robot design, programming and autonomous robot challenges.",
+    "category": "Robotics",
+    "event_type": "Competition",
+    "location": "Khulna",
+    "date": "2026-12-18",
+    "registration_link": "https://example.com/evt006"
+  },
+  {
+    "event_id": "EVT007",
+    "title": "Advanced Python Bootcamp",
+    "description": "Practical Python programming and software development.",
+    "category": "Programming",
+    "event_type": "Bootcamp",
+    "location": "Dhaka",
+    "date": "2026-11-28",
+    "registration_link": "https://example.com/evt007"
+  },
+  {
+    "event_id": "EVT008",
+    "title": "Mathematics and Calculus Seminar",
+    "description": "Seminar on calculus, algebra and mathematical problem solving.",
+    "category": "Mathematics",
+    "event_type": "Seminar",
+    "location": "Sylhet",
+    "date": "2026-12-08",
+    "registration_link": "https://example.com/evt008"
+  },
+  {
+    "event_id": "EVT009",
+    "title": "Artificial Intelligence Hackathon",
+    "description": "Build innovative AI applications using machine learning.",
+    "category": "Artificial Intelligence",
+    "event_type": "Hackathon",
+    "location": "Dhaka",
+    "date": "2026-12-12",
+    "registration_link": "https://example.com/evt009"
+  },
+  {
+    "event_id": "EVT010",
+    "title": "National Science Exhibition",
+    "description": "Student projects covering different STEM and science topics.",
+    "category": "Science",
+    "event_type": "Exhibition",
+    "location": "Rajshahi",
+    "date": "2026-12-22",
+    "registration_link": "https://example.com/evt010"
+  },
+  {
+    "event_id": "EVT011",
+    "title": "Computer Vision Workshop",
+    "description": "Practical introduction to image processing and computer vision.",
+    "category": "Artificial Intelligence",
+    "event_type": "Workshop",
+    "location": "Dhaka",
+    "date": "2026-11-27",
+    "registration_link": "https://example.com/evt011"
+  },
+  {
+    "event_id": "EVT012",
+    "title": "Biology and Genetics Seminar",
+    "description": "Explore genetics, microbiology and modern biology.",
+    "category": "Biology",
+    "event_type": "Seminar",
+    "location": "Mymensingh",
+    "date": "2026-12-05",
+    "registration_link": "https://example.com/evt012"
+  },
+  {
+    "event_id": "EVT013",
+    "title": "National Physics Workshop",
+    "description": "Hands-on experiments about mechanics and electromagnetism.",
+    "category": "Physics",
+    "event_type": "Workshop",
+    "location": "Dhaka",
+    "date": "2026-12-16",
+    "registration_link": "https://example.com/evt013"
+  },
+  {
+    "event_id": "EVT014",
+    "title": "Web Development Training",
+    "description": "Learn frontend and backend web development.",
+    "category": "Programming",
+    "event_type": "Training",
+    "location": "Gazipur",
+    "date": "2026-12-25",
+    "registration_link": "https://example.com/evt014"
+  },
+  {
+    "event_id": "EVT015",
+    "title": "National Robotics Conference",
+    "description": "Talks and discussions about robotics and automation.",
+    "category": "Robotics",
+    "event_type": "Conference",
+    "location": "Chittagong",
+    "date": "2026-12-30",
+    "registration_link": "https://example.com/evt015"
+  }
+]

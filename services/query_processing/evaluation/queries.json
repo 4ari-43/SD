@@ -1,0 +1,67 @@
+
+[
+  {
+    "id": "Q001",
+    "query": "Find robotics workshops in Dhaka",
+    "expected_language": "english",
+    "expected_location": "Dhaka",
+    "expected_category": "Robotics",
+    "expected_event_type": "Workshop"
+  },
+  {
+    "id": "Q002",
+    "query": "AI seminars in Dhaka",
+    "expected_language": "english",
+    "expected_location": "Dhaka",
+    "expected_category": "Artificial Intelligence",
+    "expected_event_type": "Seminar"
+  },
+  {
+    "id": "Q003",
+    "query": "Find programming competitions in Rajshahi",
+    "expected_language": "english",
+    "expected_location": "Rajshahi",
+    "expected_category": "Programming",
+    "expected_event_type": "Competition"
+  },
+  {
+    "id": "Q004",
+    "query": "ঢাকায় রোবটিক্স ওয়ার্কশপ খুঁজছি",
+    "expected_language": "bangla",
+    "expected_location": "Dhaka",
+    "expected_category": "Robotics",
+    "expected_event_type": "Workshop"
+  },
+  {
+    "id": "Q005",
+    "query": "Dhaka te robotics workshop chai",
+    "expected_language": "romanized_bangla",
+    "expected_location": "Dhaka",
+    "expected_category": "Robotics",
+    "expected_event_type": "Workshop"
+  },
+  {
+    "id": "Q006",
+    "query": "ঢাকায় AI seminar আছে?",
+    "expected_language": "mixed",
+    "expected_location": "Dhaka",
+    "expected_category": "Artificial Intelligence",
+    "expected_event_type": "Seminar"
+  },
+  {
+    "id": "Q007",
+    "query": "Find physics events",
+    "expected_language": "english",
+    "expected_location": null,
+    "expected_category": "Physics",
+    "expected_event_type": "Event"
+  },
+  {
+    "id": "Q008",
+    "query": "Ami programming competition khujchi",
+    "expected_language": "romanized_bangla",
+    "expected_location": null,
+    "expected_category": "Programming",
+    "expected_event_type": "Competition"
+  }
+]

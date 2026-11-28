@@ -1,0 +1,12 @@
+# Virtual environment
+venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Generated embeddings
+data/event_embeddings.npy
+
+# Environment variables
+.env
