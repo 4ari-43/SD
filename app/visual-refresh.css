@@ -713,3 +713,25 @@ body {
     font-size: 9px;
   }
 }
+.search-pagination {
+  padding: .65rem .9rem;
+  margin-block: .75rem 0;
+  border: 1px solid currentColor;
+  border-radius: .5rem;
+  color: inherit;
+  cursor: pointer;
+}
+
+.search-pagination:disabled {
+  opacity: .65;
+  cursor: wait;
+}
+
+.results-column .empty-results button {
+  margin-top: .75rem;
+}
+
+.results-column .results-sort-note {
+  display: inline;
+  text-align: end;
+}

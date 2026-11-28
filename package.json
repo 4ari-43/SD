@@ -7,7 +7,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test:index": "node --experimental-strip-types --test tests/opportunity-index.test.ts"
+    "test:index": "node --experimental-strip-types --test tests/opportunity-index.test.ts",
+    "test:search": "node --test tests/search/*.test.ts",
+    "search:index": "node --env-file-if-exists=.env.local scripts/search/index.ts",
+    "search:evaluate": "node --env-file-if-exists=.env.local scripts/search/evaluate.ts",
+    "search:load": "node scripts/search/load.ts",
+    "search:load-data": "node scripts/search/generate-load-data.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

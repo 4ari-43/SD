@@ -2,11 +2,11 @@ import { ArrowLeft, Clock3, MapPin } from "lucide-react"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
-import { opportunities } from "@/lib/opportunities"
+import { detail } from "@/lib/server/search/service"
+import { deadline as requestDeadline } from "@/lib/server/search/transport"
+import { formatListingDate } from "@/lib/search/dates"
 
-export async function generateStaticParams() {
-  return opportunities.map(({ id }) => ({ id }))
-}
+export const dynamic = "force-dynamic"
 
 export default async function OpportunityPage({
   params,
@@ -14,7 +14,7 @@ export default async function OpportunityPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const opportunity = opportunities.find((item) => item.id === id)
+  const opportunity = await detail(id, requestDeadline(250))
 
   if (!opportunity) notFound()
 
@@ -28,12 +28,6 @@ export default async function OpportunityPage({
     : opportunity.type === "Internship"
       ? "/internships"
       : "/scholarships"
-  const deadline = new Date(`${opportunity.deadline}T00:00:00`).toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  })
-
   return (
     <main className="opportunity-detail-page">
       <SiteHeader />
@@ -68,7 +62,7 @@ export default async function OpportunityPage({
             </div>
             <div>
               <dt>Apply by</dt>
-              <dd><Clock3 size={15} />{deadline}</dd>
+              <dd><Clock3 size={15} />{opportunity.deadlineAt ? formatListingDate(opportunity.deadlineAt, true) : "Not listed"}</dd>
             </div>
           </dl>
 
@@ -80,7 +74,7 @@ export default async function OpportunityPage({
               ))}
             </div>
           </section>
-          <p className="detail-updated">Posted {opportunity.posted}</p>
+          {opportunity.postedAt && <p className="detail-updated">Posted {formatListingDate(opportunity.postedAt, true)}</p>}
         </article>
       </section>
     </main>

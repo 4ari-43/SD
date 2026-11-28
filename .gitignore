@@ -18,6 +18,21 @@ yarn-error.log*
 
 # env files
 .env*
+!.env.example
+
+# Search services and local artifacts
+**/.venv/
+**/__pycache__/
+**/.pytest_cache/
+**/.ruff_cache/
+/services/inference/.cache/
+/services/inference/models/
+/infra/data/
+/data/local/
+/reports/search/
+/.playwright-cli/
+*.onnx
+*.safetensors
 
 # vercel
 .vercel

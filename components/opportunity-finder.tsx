@@ -1,12 +1,15 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { ArrowRight, ArrowUp, Check, ChevronDown, Clock3, MapPin, Search, SlidersHorizontal, Sparkles, X } from "lucide-react"
 import Link from "next/link"
 import { SiteHeader } from "@/components/site-header"
 import type { Opportunity } from "@/lib/opportunities"
-import { opportunities, popularSearches } from "@/lib/opportunities"
-import { filterOpportunities, getSuggestions, type Filters } from "@/lib/search-opportunities"
+import { popularSearches } from "@/lib/opportunities"
+import type { Filters } from "@/lib/search-opportunities"
+import { compensationFilters, modes, periods, types, type SearchHit, type SearchRequest } from "@/lib/search/contracts"
+import { formatListingDate } from "@/lib/search/dates"
+import { useOpportunitySearch, useOpportunitySuggestions } from "./use-opportunity-search"
 
 const initialFilters: Filters = {
   type: "All",
@@ -40,12 +43,13 @@ function FilterControls({
   filters,
   setFilters,
   idPrefix,
+  categories,
 }: {
   filters: Filters
   setFilters: (filters: Filters) => void
   idPrefix: string
+  categories: string[]
 }) {
-  const categories = ["All fields", ...new Set(opportunities.map((item) => item.category))]
   const update = (key: keyof Filters, value: string) => setFilters({ ...filters, [key]: value })
 
   return <div className="filter-controls">
@@ -59,13 +63,13 @@ function FilterControls({
     <div className="select-wrap"><select id={`${idPrefix}-compensation`} value={filters.compensation} onChange={(event) => update("compensation", event.target.value)}><option value="Any">Any compensation</option><option value="hourly-40">$40+ per hour</option><option value="annual-80">$80k+ per year</option><option value="funding">Scholarship / stipend</option></select><ChevronDown size={15} /></div>
 
     <label className="filter-label" htmlFor={`${idPrefix}-location`}>Location</label>
-    <div className="filter-input-wrap"><MapPin size={15} /><input id={`${idPrefix}-location`} value={filters.location} onChange={(event) => update("location", event.target.value)} placeholder="City, country, or remote" /></div>
+    <div className="filter-input-wrap"><MapPin size={15} /><input id={`${idPrefix}-location`} maxLength={100} value={filters.location} onChange={(event) => update("location", event.target.value)} placeholder="City, country, or remote" /></div>
 
     <label className="filter-label" htmlFor={`${idPrefix}-mode`}>Work mode</label>
     <div className="select-wrap"><select id={`${idPrefix}-mode`} value={filters.mode} onChange={(event) => update("mode", event.target.value)}><option>Any</option><option>Remote</option><option>On-site</option><option>Hybrid</option></select><ChevronDown size={15} /></div>
 
     <label className="filter-label" htmlFor={`${idPrefix}-category`}>Field of interest</label>
-    <div className="select-wrap"><select id={`${idPrefix}-category`} value={filters.category} onChange={(event) => update("category", event.target.value)}>{categories.map((category) => <option key={category}>{category}</option>)}</select><ChevronDown size={15} /></div>
+    <div className="select-wrap"><select id={`${idPrefix}-category`} value={filters.category} onChange={(event) => update("category", event.target.value)}>{["All fields", ...categories].map((category) => <option key={category}>{category}</option>)}</select><ChevronDown size={15} /></div>
 
     <div className="filter-divider" />
     <label className="filter-label" htmlFor={`${idPrefix}-sort`}>Sort by</label>
@@ -78,18 +82,20 @@ function SearchBox({
   filters,
   setFilters,
   onClearFilters,
+  categories,
 }: {
   onSearch: (value: string) => void
   filters: Filters
   setFilters: (filters: Filters) => void
   onClearFilters: () => void
+  categories: string[]
 }) {
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
   const [filtersOpen, setFiltersOpen] = useState(false)
   const [active, setActive] = useState(-1)
   const root = useRef<HTMLDivElement>(null)
-  const suggestions = useMemo(() => getSuggestions(opportunities, query), [query])
+  const suggestions = useOpportunitySuggestions(query, open)
   useEffect(() => {
     function outside(event: MouseEvent) {
       if (!root.current?.contains(event.target as Node)) {
@@ -110,7 +116,7 @@ function SearchBox({
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
     if (event.key === "ArrowDown" && open && suggestions.length) { event.preventDefault(); setActive((current) => (current + 1) % suggestions.length) }
     else if (event.key === "ArrowUp" && open && suggestions.length) { event.preventDefault(); setActive((current) => (current - 1 + suggestions.length) % suggestions.length) }
-    else if (event.key === "Enter") { if (event.nativeEvent.isComposing || event.keyCode === 229) return; event.preventDefault(); submit(active >= 0 ? suggestions[active] : query) }
+    else if (event.key === "Enter") { if (event.nativeEvent.isComposing || event.keyCode === 229) return; event.preventDefault(); submit(open ? suggestions[active] ?? query : query) }
     else if (event.key === "Escape") setOpen(false)
   }
   return <div className="search-wrap" ref={root} onKeyDown={(event) => {
@@ -122,7 +128,7 @@ function SearchBox({
     <div className="search-control-row">
       <div className={`search-box ${open ? "search-box-open" : ""}`}>
         <Search className="search-icon" size={21} aria-hidden="true" />
-        <input aria-label="Search opportunities" aria-autocomplete="list" aria-controls="search-suggestions" aria-expanded={open && !!query} role="combobox" placeholder="Search roles, companies, or skills..." value={query} onFocus={() => { setFiltersOpen(false); if (query) setOpen(true) }} onChange={(event) => { setQuery(event.target.value); setOpen(true); setFiltersOpen(false); setActive(-1) }} onKeyDown={handleKeyDown} />
+        <input aria-label="Search opportunities" aria-autocomplete="list" aria-controls={open && suggestions.length ? "search-suggestions" : undefined} aria-expanded={open && suggestions.length > 0} aria-activedescendant={open && suggestions[active] ? `suggestion-${active}` : undefined} maxLength={256} role="combobox" placeholder="Search roles, companies, or skills..." value={query} onFocus={() => { setFiltersOpen(false); if (query) setOpen(true) }} onChange={(event) => { setQuery(event.target.value); setOpen(true); setFiltersOpen(false); setActive(-1) }} onKeyDown={handleKeyDown} />
         {query && <button className="clear-search" aria-label="Clear search" onClick={() => { setQuery(""); onSearch(""); setOpen(true); setFiltersOpen(false); setActive(-1) }}><X size={17} /></button>}
         <kbd className="enter-hint">↵ <span>Enter</span></kbd>
         <button className="search-submit" onClick={() => submit()} aria-label="Search opportunities"><Search size={19} /><span>Search</span></button>
@@ -145,16 +151,16 @@ function SearchBox({
     </div>
     {filtersOpen && <aside id="search-filter-popover" className="filter-sidebar search-filter-popover" role="dialog" aria-label="Filter opportunities">
       <div className="filter-heading"><div><SlidersHorizontal size={17} /><strong>Filter opportunities</strong></div><button type="button" onClick={onClearFilters}>Clear all</button></div>
-      <FilterControls filters={filters} setFilters={setFilters} idPrefix="popover" />
+      <FilterControls filters={filters} setFilters={setFilters} idPrefix="popover" categories={categories} />
       <div className="filter-tip"><Sparkles size={15} /><span>Filters work together with your search.</span></div>
     </aside>}
-    {open && query && <div id="search-suggestions" className="suggestions" role="listbox" aria-label="Search suggestions">
-      {suggestions.length ? <>{suggestions.map((suggestion, index) => <button role="option" aria-selected={active === index} key={suggestion} className={`suggestion ${active === index ? "suggestion-active" : ""}`} onMouseEnter={() => setActive(index)} onClick={() => submit(suggestion)}><Search size={16} /><span><Highlight text={suggestion} query={query} /></span><ArrowUp size={14} className="suggestion-enter" /></button>)}<div className="suggestion-foot"><span>Search opportunities</span><span><kbd>↑</kbd><kbd>↓</kbd> navigate <kbd>↵</kbd> select <kbd>esc</kbd> close</span></div></> : <div className="suggestion-empty"><Search size={18} /><span>No suggestions for “{query}”</span></div>}
+    {open && suggestions.length > 0 && <div id="search-suggestions" className="suggestions" role="listbox" aria-label="Search suggestions">
+      {suggestions.map((suggestion, index) => <button id={`suggestion-${index}`} role="option" tabIndex={-1} aria-selected={active === index} key={suggestion} className={`suggestion ${active === index ? "suggestion-active" : ""}`} onMouseEnter={() => setActive(index)} onClick={() => submit(suggestion)}><Search size={16} /><span><Highlight text={suggestion} query={query} /></span><ArrowUp size={14} className="suggestion-enter" /></button>)}
     </div>}
   </div>
 }
 
-function OpportunityCard({ item, featured = false }: { item: Opportunity; featured?: boolean }) {
+function OpportunityCard({ item, featured = false }: { item: SearchHit; featured?: boolean }) {
   const colors = item.type === "Job" ? "badge-job" : item.type === "Internship" ? "badge-internship" : "badge-scholarship"
   const initial = item.organization.charAt(0)
   return <article className={`opportunity-card ${featured ? "featured-card" : ""}`}>
@@ -164,15 +170,14 @@ function OpportunityCard({ item, featured = false }: { item: Opportunity; featur
     <div className="card-meta"><span><MapPin size={14} />{item.location}</span><span><span className={`mode-dot ${item.mode.toLowerCase()}`} />{item.mode}</span></div>
     <div className="tag-row">{item.skills.slice(0, 3).map((skill) => <span className="skill-tag" key={skill}>{skill}</span>)}</div>
     <div className="card-bottom"><span className="compensation">{item.compensation}</span><Link href={`/opportunities/${item.id}`} className="details-link">View details <ArrowRight size={15} /></Link></div>
-    <div className="deadline-note"><Clock3 size={13} /> Apply by {new Date(`${item.deadline}T00:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</div>
+    {item.deadlineAt && <div className="deadline-note"><Clock3 size={13} /> Apply by {formatListingDate(item.deadlineAt)}</div>}
   </article>
 }
 
-function FilterSidebar({ filters, setFilters, clear }: { filters: Filters; setFilters: (filters: Filters) => void; clear: () => void }) {
+function FilterSidebar({ filters, setFilters, clear, categories }: { filters: Filters; setFilters: (filters: Filters) => void; clear: () => void; categories: string[] }) {
   return <aside className="filter-sidebar">
     <div className="filter-heading"><div><SlidersHorizontal size={17} /><strong>Filters</strong></div><button onClick={clear}>Clear all</button></div>
-    <FilterControls filters={filters} setFilters={setFilters} idPrefix="sidebar" />
-    <div className="filter-tip"><Sparkles size={15} /><span>New opportunities added weekly.</span></div>
+    <FilterControls filters={filters} setFilters={setFilters} idPrefix="sidebar" categories={categories} />
   </aside>
 }
 
@@ -183,7 +188,28 @@ export function OpportunityFinder({ initialType }: { initialType?: Opportunity["
   const [mobileFilters, setMobileFilters] = useState(false)
   const [searchSequence, setSearchSequence] = useState(0)
   const hasSubmitted = useRef(false)
-  const results = useMemo(() => filterOpportunities(opportunities, query, filters), [query, filters])
+  const [categories, setCategories] = useState<string[]>([])
+  const sort = filters.sort as SearchRequest["sort"]
+  const results = useOpportunitySearch({
+    query, sort, pageSize: 20, filters: {
+      type: types.find(type => type === filters.type),
+      mode: modes.find(mode => mode === filters.mode),
+      timePeriod: periods.find(period => period === filters.timePeriod),
+      compensation: compensationFilters.find(value => value === filters.compensation),
+      category: filters.category === "All fields" ? undefined : filters.category,
+      location: filters.location || undefined,
+    },
+  }, submitted, searchSequence)
+  useEffect(() => {
+    const controller = new AbortController()
+    fetch("/api/opportunities/facets", { signal: controller.signal }).then(async response => {
+      if (response.ok) {
+        const data = await response.json()
+        if (!controller.signal.aborted) setCategories(data.categories)
+      }
+    }).catch(() => undefined)
+    return () => controller.abort()
+  }, [])
   useEffect(() => {
     const sections = document.querySelectorAll<HTMLElement>("[data-reveal]")
     if (!("IntersectionObserver" in window)) {
@@ -220,11 +246,38 @@ export function OpportunityFinder({ initialType }: { initialType?: Opportunity["
     <section id="home" className="hero">
       <div className="hero-glow" aria-hidden="true" /><div className="hero-inner">
         <h1>Find your next <span className="headline-accent">move.</span></h1>
-        <div className="hero-search"><SearchBox onSearch={runSearch} filters={filters} setFilters={setFilters} onClearFilters={clearFilters} /><div className="popular-row" aria-label="Popular searches">{popularSearches.slice(0, 4).map((term) => <button key={term} onClick={() => runSearch(term)}>{term}</button>)}</div></div>
+        <div className="hero-search"><SearchBox onSearch={runSearch} filters={filters} setFilters={setFilters} onClearFilters={clearFilters} categories={categories} /><div className="popular-row" aria-label="Popular searches">{popularSearches.slice(0, 4).map((term) => <button key={term} onClick={() => runSearch(term)}>{term}</button>)}</div></div>
       </div>
     </section>
-    {submitted && <section id="explore" className="explore-section scroll-reveal" data-reveal><div className="explore-head"><div><h2>{initialType === "Job" ? "Jobs" : initialType === "Internship" ? "Internships" : initialType === "Scholarship" ? "Scholarships" : "Search results"}</h2><p>{query ? `Matches for “${query}”` : initialType ? "Browse available opportunities." : "All opportunities"}</p></div><div className="explore-head-right"><span className="live-indicator"><i /> Updated today</span><button className="mobile-filter-button" onClick={() => setMobileFilters(!mobileFilters)}><SlidersHorizontal size={16} /> Filters</button></div></div>
-      <div className="results-layout"><div className={`filters-mobile ${mobileFilters ? "filters-mobile-open" : ""}`}><FilterSidebar filters={filters} setFilters={setFilters} clear={clear} /></div><div className="results-column"><div className="results-toolbar"><span><strong>{results.length}</strong> opportunities found</span><span className="results-sort-note">Sorted by {filters.sort.toLowerCase()}</span></div>{results.length ? <div className="results-grid">{results.map((item) => <OpportunityCard item={item} key={item.id} />)}</div> : <div className="empty-results"><span className="empty-icon"><Search size={22} /></span><h3>No opportunities found</h3><p>Try a different search or loosen up your filters to see more results.</p><button onClick={clear}>Clear search &amp; filters</button></div>}</div></div>
+    {submitted && <section id="explore" className="explore-section scroll-reveal" data-reveal>
+      <div className="explore-head">
+        <div><h2>{initialType === "Job" ? "Jobs" : initialType === "Internship" ? "Internships" : initialType === "Scholarship" ? "Scholarships" : "Search results"}</h2>
+          <p>{query ? `Matches for “${query}”` : "Browse available opportunities."}</p>
+        </div>
+        <button className="mobile-filter-button" aria-expanded={mobileFilters} onClick={() => setMobileFilters(!mobileFilters)}><SlidersHorizontal size={16} /> Filters</button>
+      </div>
+      <div className="results-layout">
+        <div className={`filters-mobile ${mobileFilters ? "filters-mobile-open" : ""}`}><FilterSidebar filters={filters} setFilters={setFilters} clear={clear} categories={categories} /></div>
+        <div className="results-column" aria-busy={results.loading || results.loadingMore}>
+          {results.loading && <div className="empty-results" role="status"><h3>Searching opportunities…</h3></div>}
+          {results.error === "first" && <div className="empty-results" role="alert"><h3>Search is temporarily unavailable</h3><button onClick={results.restart}>Try again</button></div>}
+          {results.data && <>
+            <div className="results-toolbar" role="status">
+              <span><strong>{results.data.results.length}</strong> shown{results.data.count.relation === "exact" ? ` · ${results.data.count.value.toLocaleString()} listings matched` : results.data.count.relation === "atLeast" ? ` · ${results.data.count.value.toLocaleString()}+ listings matched` : ""}</span>
+              <span className="results-sort-note">{query ? sort === "Relevance" ? "Ranked by relevance · up to 200 results" : "Keyword matches · " + sort.toLowerCase() : sort === "Deadline" ? "Earliest deadline" : "Newest first"}</span>
+            </div>
+            {results.data.results.length > 0
+              ? <div className="results-grid">{results.data.results.map(item => <OpportunityCard item={item} key={item.id} />)}</div>
+              : !results.data.nextCursor && <div className="empty-results"><span className="empty-icon"><Search size={22} /></span><h3>No opportunities found</h3><p>Try a different search or loosen your filters.</p><button onClick={clear}>Clear search &amp; filters</button></div>}
+            {results.error === "expired" && <div className="results-toolbar" role="alert"><span>These results have expired.</span><button className="search-pagination" onClick={results.restart}>Refresh results</button></div>}
+            {results.error !== "expired" && results.data.nextCursor && <div className="results-toolbar">
+              {results.error === "more" && <span role="alert">More results could not be loaded.</span>}
+              <button className="search-pagination" disabled={results.loadingMore} onClick={results.loadMore}>{results.loadingMore ? "Loading…" : results.error === "more" ? "Try again" : "Load more"}</button>
+            </div>}
+            {results.data.degraded.includes("pagination") && <div className="results-toolbar" role="status">More results are temporarily unavailable.</div>}
+          </>}
+        </div>
+      </div>
     </section>}
   </main>
 }
