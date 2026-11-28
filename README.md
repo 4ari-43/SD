@@ -17,8 +17,15 @@ Once [OpenSearch](http://127.0.0.1:9200/) responds, create the index and seed it
 pnpm search:index create opportunities-v1
 pnpm search:index import tests/search/fixtures/listings.jsonl opportunities-v1
 pnpm search:index promote opportunities-v1
-pnpm dev
 ```
+
+Start the Next.js development server with npm:
+
+```sh
+npm run dev
+```
+
+You can also use `pnpm dev`. The search backend runs separately through the setup above.
 
 Open [Pathfinder](http://localhost:3000) and try searching for `C++` or browsing Internships. The bundled listings are synthetic. Keyword search works as soon as they’re indexed. To add semantic matches, wait for the [online inference service](http://127.0.0.1:8001/health) and [ingestion inference service](http://127.0.0.1:8002/health) to finish loading their models, then run `pnpm search:index backfill`.
 
