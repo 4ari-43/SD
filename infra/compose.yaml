@@ -1,0 +1,42 @@
+name: opportunity-search
+services:
+  opensearch:
+    image: opensearchproject/opensearch:3.1.0
+    environment:
+      discovery.type: single-node
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms2g -Xmx2g"
+      search.max_open_pit_context: "2048"
+    ports:
+      - "127.0.0.1:9200:9200"
+    volumes:
+      - search-data:/usr/share/opensearch/data
+  redis:
+    image: redis:7.4-alpine
+    command: ["redis-server", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+  cache:
+    build: ../services/cache
+    depends_on: [redis]
+    ports:
+      - "127.0.0.1:8003:8000"
+  inference:
+    build: ../services/inference
+    environment:
+      RERANK_ONNX_FILE: ${RERANK_ONNX_FILE:-onnx/model.onnx}
+    ports:
+      - "127.0.0.1:8001:8000"
+    volumes:
+      - model-cache:/models
+  ingest-inference:
+    profiles: [ingest]
+    build: ../services/inference
+    environment:
+      INFERENCE_ROLE: ingest
+    ports:
+      - "127.0.0.1:8002:8000"
+    volumes:
+      - model-cache:/models
+volumes:
+  search-data:
+  model-cache:

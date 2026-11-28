@@ -1,0 +1,4 @@
+{"query":"C++","category":"Job","split":"tuning","filters":{"type":"Job"},"relevance":{"demo-cpp":3,"demo-dotnet":0}}
+{"query":"computer vision placement","category":"Internship","split":"held-out","filters":{"type":"Internship"},"relevance":{"demo-intern":3}}
+{"query":"graduate computing funding","category":"Scholarship","split":"held-out","filters":{"type":"Scholarship","compensation":"funding"},"relevance":{"demo-grant":3}}
+{"query":"C#","category":"Job","split":"held-out","filters":{"type":"Job","location":"Toronto"},"relevance":{"demo-dotnet":3}}
